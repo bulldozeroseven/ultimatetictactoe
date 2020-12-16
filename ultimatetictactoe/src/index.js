@@ -54,7 +54,7 @@ class TTT extends React.Component {
 
 class UTTT extends React.Component {
     handleClick(i, j) {
-        if (this.props.boardNumber !== this.props.activeUTTT && this.props.activeUTTT !== null) {
+        if (calculateUTTTWinner(this.props.squares) || (this.props.boardNumber !== this.props.activeUTTT && this.props.activeUTTT !== null)) {
             return;
         }
         this.props.onClick(i, j);
@@ -160,19 +160,39 @@ class UUTTT extends React.Component {
         squares[i][j][k] = this.state.xIsNext ? 'blue' : 'red';
         let activeUTTT;
         let activeTTT;
+        // if (calculateTTTWinner(squares[i][j])) {
+        //     if (calculateUTTTWinner(squares[j]) || isUTTTFull(squares[j])) {
+        //         activeUTTT = null;
+        //     } else {
+        //         activeUTTT = j;
+        //     }
+        //     activeTTT = null;
+        // } else if (calculateTTTWinner(squares[i][k]) || isTTTFull(squares[i][k])) {
+        //     activeUTTT = i;
+        //     activeTTT = null;
+        // } else {
+        //     activeUTTT = i;
+        //     activeTTT = k;
+        // }
         if (calculateTTTWinner(squares[i][j])) {
+            activeTTT = null;
             if (calculateUTTTWinner(squares[j]) || isUTTTFull(squares[j])) {
                 activeUTTT = null;
             } else {
                 activeUTTT = j;
             }
-            activeTTT = null;
-        } else if (calculateTTTWinner(squares[i][k]) || isTTTFull(squares[i][k])) {
-            activeUTTT = i;
-            activeTTT = null;
         } else {
-            activeUTTT = i;
-            activeTTT = k;
+            if (calculateTTTWinner(squares[i][k]) || isTTTFull(squares[i][k])) {
+                activeTTT = null;
+                if (calculateUTTTWinner(squares[i]) || isUTTTFull(squares[i])) {
+                    activeUTTT = null;
+                } else {
+                    activeUTTT = i;
+                }
+            } else {
+                activeTTT = k;
+                activeUTTT = i;
+            }
         }
         this.setState({
             xIsNext: !this.state.xIsNext,
