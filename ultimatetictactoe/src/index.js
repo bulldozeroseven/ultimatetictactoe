@@ -160,20 +160,6 @@ class UUTTT extends React.Component {
         squares[i][j][k] = this.state.xIsNext ? 'blue' : 'red';
         let activeUTTT;
         let activeTTT;
-        // if (calculateTTTWinner(squares[i][j])) {
-        //     if (calculateUTTTWinner(squares[j]) || isUTTTFull(squares[j])) {
-        //         activeUTTT = null;
-        //     } else {
-        //         activeUTTT = j;
-        //     }
-        //     activeTTT = null;
-        // } else if (calculateTTTWinner(squares[i][k]) || isTTTFull(squares[i][k])) {
-        //     activeUTTT = i;
-        //     activeTTT = null;
-        // } else {
-        //     activeUTTT = i;
-        //     activeTTT = k;
-        // }
         if (calculateTTTWinner(squares[i][j])) {
             activeTTT = null;
             if (calculateUTTTWinner(squares[j]) || isUTTTFull(squares[j])) {
