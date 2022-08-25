@@ -176,17 +176,33 @@ class Board extends React.Component {
             }
             arr0.push(arr1);
         }
-        this.state = {
+        this.state = this.newState();
+    };
+
+    newState() {
+        let arr0 = [];
+        for (let i = 0; i < 9; i += 1) {
+            let arr1 = [];
+            for (let j = 0; j < 9; j += 1) {
+                let arr2 = [];
+                for (let k = 0; k < 9; k += 1) {
+                    arr2.push(null);
+                }
+                arr1.push(arr2);
+            }
+            arr0.push(arr1);
+        }
+        return({
             xIsNext: true,
             activeTTT: null,
             activeUTTT: null,
             squares: arr0,
-        };
-    };
+        });
+    }
 
-    updateState(activeTTT, activeUTTT, squares) {
+    updateState(xIsNext, activeTTT, activeUTTT, squares) {
         this.setState({
-            xIsNext: !this.state.xIsNext,
+            xIsNext: xIsNext,
             activeTTT: activeTTT,
             activeUTTT: activeUTTT,
             squares: squares,
@@ -194,7 +210,7 @@ class Board extends React.Component {
     }
 
     handleClick(i, j, k) {
-        if ((calculateUUTTTWinner(this.state.squares) || calculateUTTTWinner(this.state.squares[i]) || calculateTTTWinner(this.state.squares[i][j])) !== null) {
+        if ((calculateUTTTWinner(this.state.squares[i]) || calculateTTTWinner(this.state.squares[i][j])) !== null) {
             return
         }
         const squares = this.state.squares.slice();
@@ -221,7 +237,22 @@ class Board extends React.Component {
                 activeUTTT = i;
             }
         }
-        this.updateState(activeTTT, activeUTTT, squares);
+        this.updateState(!this.state.xIsNext, activeTTT, activeUTTT, squares);
+        let winner;
+        if (calculateUUTTTWinner(this.state.squares) == 'blue') {
+            winner = "you won!";
+        } else if (calculateUUTTTWinner(this.state.squares) == 'red') {
+            winner = "you lost!";
+        } else if (isUUTTTFull(this.state.squares)) {
+            winner = "you tied!";
+        }
+        if (winner) {
+            let restart = window.confirm(winner + '\n' + "do you want to restart?");
+            if (restart) {
+                this.setState(this.newState())
+            }
+        } 
+        return;
     }
 
     componentDidUpdate() {
@@ -260,7 +291,6 @@ class Board extends React.Component {
                             <td style={{'background' : bgcolor}}>
                                 <UUTTT 
                                     state={this.state}
-                                    updateState={(a, b, c) => this.updateState(a, b, c)}
                                     onClick={(i, j, k) => this.handleClick(i, j, k)}/>
                             </td>
                         </tr>
@@ -337,6 +367,14 @@ function calculateUUTTTWinner(squares) {
         }
     }
     return null;
+}
+
+function isUUTTTFull(squares) {
+    let full = true;
+    for (let i = 0; i < 9; i += 1) {
+        full &= calculateUTTTWinner(squares[i]) !== null;
+    }
+    return full;
 }
 
 function getRandomInt(min, max) {
