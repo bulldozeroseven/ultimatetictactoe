@@ -239,9 +239,9 @@ class Board extends React.Component {
         }
         this.updateState(!this.state.xIsNext, activeTTT, activeUTTT, squares);
         let winner;
-        if (calculateUUTTTWinner(this.state.squares) == 'blue') {
+        if (calculateUUTTTWinner(this.state.squares) === 'blue') {
             winner = "you won!";
-        } else if (calculateUUTTTWinner(this.state.squares) == 'red') {
+        } else if (calculateUUTTTWinner(this.state.squares) === 'red') {
             winner = "you lost!";
         } else if (isUUTTTFull(this.state.squares)) {
             winner = "you tied!";
@@ -262,13 +262,28 @@ class Board extends React.Component {
                 a = getRandomInt(0, 8);
             }
             let b = this.state.activeTTT;
-            console.log(b);
             while (b === null || calculateTTTWinner(this.state.squares[a][b]) !== null) {
                 b = getRandomInt(0, 8);
             }
-            let c = getRandomInt(0, 8);
-            while (this.state.squares[a][b][c] !== null) {
+            let c;
+            let i = 0;
+            let foundWin = false;
+            while (i < 9 && !foundWin) {
+                if (this.state.squares[a][b][i] === null) {
+                    const squares = [...this.state.squares[a][b]];
+                    squares[i] = 'red';
+                    if (calculateTTTWinner(squares) === 'red') {
+                        c = i;
+                        foundWin = true;
+                    }
+                }
+                i++;
+            }
+            if (!foundWin) {
                 c = getRandomInt(0, 8);
+                while (this.state.squares[a][b][c] !== null) {
+                    c = getRandomInt(0, 8);
+                }
             }
             this.handleClick(a, b, c);
         }
