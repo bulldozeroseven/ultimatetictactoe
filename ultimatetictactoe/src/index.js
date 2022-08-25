@@ -48,7 +48,13 @@ class TTT extends React.Component {
             );
         }
 
-        return (<table className='small'>{table_rows}</table>);
+        return (
+            <table className='small'>
+                <tbody>
+                    {table_rows}
+                </tbody>
+            </table>
+        );
     }
 }
 
@@ -65,17 +71,22 @@ class UTTT extends React.Component {
         for (let i = 0; i < 3; i += 1) {
             let table_row = [];
             for (let j = 0; j < 3; j += 1) {
-                let TTTColor = calculateTTTWinner(this.props.squares[ 3 * i + j]);
-                if (!TTTColor) {
-                    TTTColor = 'white'
+                let bgcolor = calculateTTTWinner(this.props.squares[ 3 * i + j]);
+                if (!bgcolor) {
+                    if (this.props.activeTTT === 3 * i + j && this.props.activeUTTT === this.props.boardNumber) {
+                        bgcolor = "yellow"
+                    } else {
+                        bgcolor = "white"
+                    }
                 }
                 table_row.push(
-                    <td style={{'background' : TTTColor}}>
+                    <td style={{'background' : bgcolor}}>
                         <TTT
                             xIsNext={this.props.xIsNext}
                             boardNumber={3 * i + j}
                             squares={this.props.squares[3 * i + j]}
                             activeTTT={this.props.activeTTT}
+                            activeUTTT={this.props.activeUTTT}
                             onClick={(k) => this.handleClick(3 * i + j, k)}
                         />
                     </td>
@@ -89,16 +100,68 @@ class UTTT extends React.Component {
         }
 
         return (
-            <div>
-                <table>
+            <table>
+                <tbody>
                     {table_rows}
-                </table>
-            </div>
+                </tbody>
+            </table>
         );
     }
 }
 
 class UUTTT extends React.Component {
+    
+    handleClick(i, j, k) {
+        this.props.onClick(i, j, k);
+    }
+
+    render() {
+        let table_rows = [];
+        for (let i = 0; i < 3; i += 1) {
+            let table_row = [];
+            for (let j = 0; j < 3; j += 1) {
+                let bgcolor = calculateUTTTWinner(this.props.state.squares[3 * i + j]);
+                if (!bgcolor) {
+                    if (this.props.state.activeTTT === null 
+                        && this.props.state.activeUTTT === 3 * i + j
+                        && !calculateUUTTTWinner(this.props.state.squares)) {
+                        bgcolor = "yellow"
+                    } else {
+                        bgcolor = "white"
+                    }
+                }
+                table_row.push(
+                    <td style={{'background' : bgcolor}}>
+                        <UTTT
+                            xIsNext={this.props.state.xIsNext}
+                            boardNumber={3 * i + j}
+                            squares={this.props.state.squares[3 * i + j]}
+                            activeTTT={this.props.state.activeTTT}
+                            activeUTTT={this.props.state.activeUTTT}
+                            onClick={(k, l) => this.handleClick(3 * i + j, k, l)}
+                        />
+                    </td>
+                );
+            }
+            table_rows.push(
+                <tr>
+                    {table_row}
+                </tr>
+            );
+        }
+
+        return (
+            <table>
+                <tbody>
+                    {table_rows}
+                </tbody>
+            </table>
+        );
+    }
+}
+
+class Board extends React.Component {
+
     constructor(props) {
         super(props);
         let arr0 = [];
@@ -121,41 +184,19 @@ class UUTTT extends React.Component {
         };
     };
 
-    render() {
-        let table_rows = [];
-        for (let i = 0; i < 3; i += 1) {
-            let table_row = [];
-            for (let j = 0; j < 3; j += 1) {
-                table_row.push(
-                    <td style={{'background' : calculateUTTTWinner(this.state.squares[3 * i + j])}}>
-                        <UTTT
-                            xIsNext={this.state.xIsNext}
-                            boardNumber={3 * i + j}
-                            squares={this.state.squares[3 * i + j]}
-                            activeTTT={this.state.activeTTT}
-                            activeUTTT={this.state.activeUTTT}
-                            onClick={(k, l) => this.handleClick(3 * i + j, k, l)}
-                        />
-                    </td>
-                );
-            }
-            table_rows.push(
-                <tr>
-                    {table_row}
-                </tr>
-            );
-        }
-
-        return (
-            <div>
-                <table>
-                    {table_rows}
-                </table>
-            </div>
-        );
+    updateState(activeTTT, activeUTTT, squares) {
+        this.setState({
+            xIsNext: !this.state.xIsNext,
+            activeTTT: activeTTT,
+            activeUTTT: activeUTTT,
+            squares: squares,
+        });
     }
 
     handleClick(i, j, k) {
+        if (calculateUUTTTWinner(this.state.squares)) {
+            return
+        }
         const squares = this.state.squares.slice();
         squares[i][j][k] = this.state.xIsNext ? 'blue' : 'red';
         let activeUTTT;
@@ -180,12 +221,52 @@ class UUTTT extends React.Component {
                 activeUTTT = i;
             }
         }
-        this.setState({
-            xIsNext: !this.state.xIsNext,
-            activeTTT: activeTTT,
-            activeUTTT: activeUTTT,
-            squares: squares,
-        });
+        this.updateState(activeTTT, activeUTTT, squares);
+    }
+
+    componentDidUpdate() {
+        if (!this.state.xIsNext) {    
+            let a = this.state.activeUTTT;
+            if (a === null) {
+                a = getRandomInt(0, 8);
+            }
+            let b = this.state.activeTTT;
+            if (b === null) {
+                b = getRandomInt(0, 8);
+            }
+            let c = getRandomInt(0, 8);
+            while (this.state.squares[a][b][c] !== null) {
+                c = getRandomInt(0, 8);
+            }
+            this.handleClick(a, b, c);
+        }
+    }
+
+    render() {
+        let bgcolor = calculateUUTTTWinner(this.state.squares);
+        if (!bgcolor) {
+            if (this.state.activeUTTT === null) {
+                bgcolor = "yellow"
+            } else {
+                bgcolor = "white"
+            }
+        }
+        return (
+            <div>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td style={{'background' : bgcolor}}>
+                                <UUTTT 
+                                    state={this.state}
+                                    updateState={(a, b, c) => this.updateState(a, b, c)}
+                                    onClick={(i, j, k) => this.handleClick(i, j, k)}/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        );
     }
 }
 
@@ -203,7 +284,7 @@ const lines = [
 ];
 
 ReactDOM.render(
-    <UUTTT />,
+    <Board />,
     document.getElementById('root')
 );
 
@@ -243,4 +324,22 @@ function isUTTTFull(squares) {
         full &= calculateTTTWinner(squares[i]) !== null;
     }
     return full;
+}
+
+function calculateUUTTTWinner(squares) {
+    for (let i = 0; i < lines.length; i++) {
+        const [a, b, c] = lines[i];
+        if (calculateUTTTWinner(squares[a])
+            && calculateUTTTWinner(squares[a]) === calculateUTTTWinner(squares[b])
+            && calculateUTTTWinner(squares[a]) === calculateUTTTWinner(squares[c])) {
+                return calculateUTTTWinner(squares[a]);
+        }
+    }
+    return null;
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
