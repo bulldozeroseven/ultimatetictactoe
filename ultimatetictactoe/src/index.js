@@ -60,7 +60,7 @@ class TTT extends React.Component {
 
 class UTTT extends React.Component {
     handleClick(i, j) {
-        if (calculateUTTTWinner(this.props.squares) || (this.props.boardNumber !== this.props.activeUTTT && this.props.activeUTTT !== null)) {
+        if (this.props.boardNumber !== this.props.activeUTTT && this.props.activeUTTT !== null) {
             return;
         }
         this.props.onClick(i, j);
@@ -194,24 +194,24 @@ class Board extends React.Component {
     }
 
     handleClick(i, j, k) {
-        if (calculateUUTTTWinner(this.state.squares)) {
+        if ((calculateUUTTTWinner(this.state.squares) || calculateUTTTWinner(this.state.squares[i]) || calculateTTTWinner(this.state.squares[i][j])) !== null) {
             return
         }
         const squares = this.state.squares.slice();
         squares[i][j][k] = this.state.xIsNext ? 'blue' : 'red';
         let activeUTTT;
         let activeTTT;
-        if (calculateTTTWinner(squares[i][j])) {
+        if (calculateTTTWinner(squares[i][j]) !== null) {
             activeTTT = null;
-            if (calculateUTTTWinner(squares[j]) || isUTTTFull(squares[j])) {
+            if ((calculateUTTTWinner(squares[j]) !== null) || isUTTTFull(squares[j])) {
                 activeUTTT = null;
             } else {
                 activeUTTT = j;
             }
         } else {
-            if (calculateTTTWinner(squares[i][k]) || isTTTFull(squares[i][k])) {
+            if ((calculateTTTWinner(squares[i][k]) !== null) || isTTTFull(squares[i][k])) {
                 activeTTT = null;
-                if (calculateUTTTWinner(squares[i]) || isUTTTFull(squares[i])) {
+                if ((calculateUTTTWinner(squares[i]) !== null) || isUTTTFull(squares[i])) {
                     activeUTTT = null;
                 } else {
                     activeUTTT = i;
@@ -225,13 +225,14 @@ class Board extends React.Component {
     }
 
     componentDidUpdate() {
-        if (!this.state.xIsNext) {    
+        if (!this.state.xIsNext) {
             let a = this.state.activeUTTT;
             if (a === null) {
                 a = getRandomInt(0, 8);
             }
             let b = this.state.activeTTT;
-            if (b === null) {
+            console.log(b);
+            while (b === null || calculateTTTWinner(this.state.squares[a][b]) !== null) {
                 b = getRandomInt(0, 8);
             }
             let c = getRandomInt(0, 8);
